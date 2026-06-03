@@ -1,0 +1,74 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+@import './animations.css';
+
+.proposal-preview h1 {
+  color: #f5f0eb;
+  font-family: "Mona Sans", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
+}
+
+.proposal-preview h2 {
+  color: #f5f0eb;
+  font-family: "Mona Sans", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 750;
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(232, 113, 42, 0.32);
+}
+
+.proposal-preview h3,
+.proposal-preview p,
+.proposal-preview li,
+.proposal-preview td,
+.proposal-preview th {
+  font-family: "DM Sans", Inter, sans-serif;
+}
+
+.proposal-preview p,
+.proposal-preview li,
+.proposal-preview td {
+  color: #c9beb7;
+  line-height: 1.75;
+}
+
+.proposal-preview p {
+  margin: 0 0 1rem;
+}
+
+.proposal-preview ul {
+  margin: 0.75rem 0 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.proposal-preview hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 1.75rem 0;
+}
+
+.proposal-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 1.5rem;
+  overflow: hidden;
+}
+
+.proposal-preview th,
+.proposal-preview td {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.proposal-preview th {
+  background: rgba(232, 113, 42, 0.16);
+  color: #f5f0eb;
+  font-weight: 700;
+}
