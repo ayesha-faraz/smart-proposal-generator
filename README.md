@@ -10,12 +10,16 @@ Propel is an AI-powered proposal generator for freelancers, agencies, consultant
 - Proposal options for tone, urgency, language, budget, and timeline
 - Professional PDF export
 - Saved proposals dashboard
+- Node.js backend API with Express routes
 
 ## Tech Stack
 
 - React
 - Vite
 - TypeScript
+- Node.js
+- Express
+- Prisma schema
 - Supabase
 - jsPDF
 
@@ -40,11 +44,43 @@ Start the dev server:
 npm run dev
 ```
 
+Install backend dependencies:
+
+```bash
+npm run backend:install
+```
+
+Start the backend API:
+
+```bash
+npm run backend:dev
+```
+
 Build for production:
 
 ```bash
 npm run build
 ```
+
+## Backend
+
+The backend is in `backend/` and includes:
+
+- Express app setup in `backend/src/app.js`
+- Node server entry with `app.listen` in `backend/src/server.js`
+- API routes in `backend/src/routes/`
+- Prisma schema in `backend/prisma/schema.prisma`
+
+Backend routes:
+
+- `GET /api/health`
+- `GET /api/users`
+- `POST /api/users/register`
+- `POST /api/users/login`
+- `GET /api/proposals`
+- `GET /api/proposals/:id`
+- `POST /api/proposals`
+- `DELETE /api/proposals/:id`
 
 ## Database
 
