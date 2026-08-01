@@ -29,7 +29,7 @@ export function Sidebar({ userType }: SidebarProps) {
   const links = userType === 'entrepreneur' ? entrepreneurLinks : agencyLinks;
 
   return (
-    <div className="hidden md:flex w-60 bg-[rgba(255,255,255,0.7)] backdrop-blur-[16px] border-r border-[rgba(174,195,176,0.2)] h-[100dvh] fixed left-0 top-0 flex-col z-40">
+    <div className="w-60 bg-[rgba(255,255,255,0.7)] backdrop-blur-[16px] border-r border-[rgba(174,195,176,0.2)] h-screen fixed left-0 top-0 flex flex-col z-40">
       <div className="px-6 pt-6 pb-6 mb-3 border-b" style={{ borderColor: 'rgba(174,195,176,0.15)' }}>
         <Link to="/" className="inline-flex transition-transform duration-200 hover:scale-[1.03]" aria-label="Go to Propel homepage">
           <img

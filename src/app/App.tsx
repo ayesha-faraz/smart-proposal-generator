@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { Suspense, lazy, useState } from 'react';
 
 import LandingPage from './components/LandingPage';
-import { ErrorBoundary } from './components/ErrorBoundary';
 
 const LoginSignup = lazy(() => import('./components/LoginSignup'));
 const AccountTypeSelection = lazy(() => import('./components/AccountTypeSelection'));
@@ -54,7 +53,7 @@ export default function App() {
             <Route path="/entrepreneur/dashboard" element={<EntrepreneurDashboard />} />
             <Route path="/entrepreneur/create-opportunity" element={<CreateOpportunity />} />
             <Route path="/entrepreneur/proposals" element={<ProposalComparison />} />
-            <Route path="/entrepreneur/deal-intelligence" element={<ErrorBoundary><DealIntelligence /></ErrorBoundary>} />
+            <Route path="/entrepreneur/deal-intelligence" element={<DealIntelligence />} />
 
             {/* Agency routes */}
             <Route path="/agency/dashboard" element={<AgencyDashboard />} />

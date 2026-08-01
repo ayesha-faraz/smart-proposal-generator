@@ -3,9 +3,8 @@ import type { ReactNode } from "react";
 import { motion } from "motion/react";
 import { BadgeCheck, Brain, CheckCircle, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { Sidebar } from "./Sidebar";
-import { agencyMatches, getOpportunityById } from "../lib/marketplace";
+import { agencyMatches, getOpportunityById, proposalScores } from "../lib/marketplace";
 import { askGroqJSON } from "../lib/ai";
-import { DealAssistant } from "./DealAssistant/DealAssistant";
 
 interface BriefResult {
   title: string;
@@ -42,12 +41,12 @@ export default function DealIntelligence() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] relative">
+    <div className="flex min-h-screen relative">
       <Background />
       <Sidebar userType="entrepreneur" />
 
-      <div className="flex-1 md:ml-60 relative z-10 p-4 sm:p-6 md:p-8 w-full min-w-0">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6 mb-6 md:mb-8">
+      <div className="flex-1 ml-60 relative z-10 p-8">
+        <div className="flex items-start justify-between gap-6 mb-8">
           <div>
             <h1 className="text-3xl mb-2" style={{ fontFamily: "Cormorant Garamond, serif", fontStyle: "italic", color: "#0F2A1D" }}>
               AI Deal Intelligence
@@ -61,7 +60,7 @@ export default function DealIntelligence() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
           <div className="space-y-6">
             <Panel icon={<Brain size={20} />} title="AI Brief Builder">
               <textarea
@@ -106,7 +105,26 @@ export default function DealIntelligence() {
             </Panel>
 
             <Panel icon={<Star size={20} />} title="AI Proposal Scoring">
-              <DealAssistant />
+              <div className="space-y-3">
+                {proposalScores.map((score) => (
+                  <div key={score.agency} className="p-4 rounded-[16px]" style={{ backgroundColor: "rgba(255,255,255,0.72)", border: "1px solid rgba(174,195,176,0.35)" }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold" style={{ color: "#0F2A1D" }}>{score.agency}</h3>
+                      <span className="px-3 py-1 rounded-full text-xs" style={{ backgroundColor: "#375534", color: "#FFFFFF" }}>
+                        Deal Score {Math.round((score.fit + score.quality + score.priceFairness + score.deliveryConfidence - score.risk) / 4)}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-3 mb-3">
+                      <Metric label="Fit" value={score.fit} />
+                      <Metric label="Quality" value={score.quality} />
+                      <Metric label="Fair Price" value={score.priceFairness} />
+                      <Metric label="Risk" value={score.risk} inverse />
+                      <Metric label="Delivery" value={score.deliveryConfidence} />
+                    </div>
+                    <p className="text-sm" style={{ color: "#375534" }}>{score.recommendation}</p>
+                  </div>
+                ))}
+              </div>
             </Panel>
           </div>
 
@@ -187,6 +205,16 @@ function Score({ label, value }: { label: string; value: number }) {
       <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(174,195,176,0.25)" }}>
         <div className="h-full rounded-full" style={{ width: `${value}%`, backgroundColor: "#375534" }} />
       </div>
+    </div>
+  );
+}
+
+function Metric({ label, value, inverse = false }: { label: string; value: number; inverse?: boolean }) {
+  const display = inverse ? `${value}%` : `${value}%`;
+  return (
+    <div className="p-3 rounded-xl text-center" style={{ backgroundColor: inverse ? "rgba(200,80,80,0.08)" : "rgba(227,238,212,0.55)" }}>
+      <div className="text-lg font-bold" style={{ color: inverse ? "#b94b4b" : "#375534" }}>{display}</div>
+      <div className="text-[11px]" style={{ color: "#6B9071" }}>{label}</div>
     </div>
   );
 }
