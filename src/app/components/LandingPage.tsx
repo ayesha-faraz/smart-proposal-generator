@@ -139,9 +139,9 @@ export default function LandingPage() {
                 }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold" style={{ color: '#0F2A1D' }}>
+                  <div className="font-semibold" style={{ color: '#0F2A1D' }}>
                     Social Media Campaign
-                  </h3>
+                  </div>
                   <span className="px-3 py-1 text-xs rounded-full" style={{ backgroundColor: 'rgba(55,85,52,0.1)', color: '#375534' }}>
                     $5-10k
                   </span>
@@ -211,6 +211,7 @@ export default function LandingPage() {
       {/* How it Works */}
       <section id="how-it-works" className="relative z-10 py-20 px-8" style={{ backgroundColor: '#0F2A1D' }}>
         <div className="max-w-7xl mx-auto">
+          <h2 className="sr-only">How it works</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               { num: '01', icon: Briefcase, title: 'Post a Brief', desc: 'Share your project needs and requirements' },

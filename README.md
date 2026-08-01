@@ -21,7 +21,10 @@ Propel is an AI-powered proposal generator for freelancers, agencies, consultant
 - Express
 - Prisma schema
 - Supabase
-- jsPDF
+- Vitest
+- Testing Library
+- axe-core
+- Lighthouse
 
 ## Getting Started
 
@@ -62,6 +65,26 @@ Build for production:
 npm run build
 ```
 
+Run tests:
+
+```bash
+npm test
+```
+
+Run the accessibility smoke audit:
+
+```bash
+npm run audit:a11y
+```
+
+Run Lighthouse against a production preview:
+
+```bash
+npm run build
+npm run preview
+npm run audit:lighthouse
+```
+
 ## Backend
 
 The backend is in `backend/` and includes:
@@ -85,3 +108,29 @@ Backend routes:
 ## Database
 
 The Supabase schema is included in `supabase-schema.sql`.
+
+## Quality Evidence
+
+- Test runner: Vitest
+- Test files:
+  - `src/app/__tests__/app.test.tsx`
+  - `src/app/__tests__/accessibility.test.tsx`
+  - `backend/src/app.test.js`
+- Latest test output: `docs/audits/test-latest.txt`
+- Latest accessibility output: `docs/audits/a11y-latest.txt`
+- Latest Lighthouse reports:
+  - `docs/audits/lighthouse-local.report.html`
+  - `docs/audits/lighthouse-local.report.json`
+
+Latest local Lighthouse scores:
+
+| Category | Score |
+| --- | ---: |
+| Performance | 61 |
+| Accessibility | 92 |
+| Best Practices | 100 |
+| SEO | 58 |
+
+## Deployment
+
+The app is configured for Vercel using `vercel.json`. The deployment checklist and rollback plan are documented in `docs/deployment-checklist.md`.
