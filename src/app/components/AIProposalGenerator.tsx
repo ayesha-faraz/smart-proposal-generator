@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft, Building2, Check, FileText, Send, Sparkles } from "lucide-react";
 import { ProposalFormData } from "./ProposalForm";
 import { Sidebar } from "./Sidebar";
+import { BriefAssistant } from "./BriefAssistant/BriefAssistant";
 import {
   buildProposalFormFromOpportunity,
   createAndSaveProposal,
@@ -30,6 +31,7 @@ export default function AIProposalGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [step, setStep] = useState(0);
   const [briefError, setBriefError] = useState("");
+  const [showBriefAssistant, setShowBriefAssistant] = useState(false);
 
   const steps = [
     "Reading opportunity brief",
@@ -178,6 +180,19 @@ export default function AIProposalGenerator() {
               </div>
 
               <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowBriefAssistant((current) => !current)}
+                  className="mb-4 text-sm font-semibold"
+                  style={{ color: "#e8712a" }}
+                >
+                  Not sure this brief is ready? Ask the brief assistant →
+                </button>
+                {showBriefAssistant && (
+                  <div className="mb-5">
+                    <BriefAssistant />
+                  </div>
+                )}
                 <Field label="Opportunity brief">
                   <textarea
                     value={formData.projectBrief}

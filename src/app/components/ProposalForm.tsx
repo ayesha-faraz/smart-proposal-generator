@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Dropdown } from "./Dropdown";
+import { BriefAssistant } from "./BriefAssistant/BriefAssistant";
 
 export interface ProposalFormData {
   businessName: string;
@@ -61,6 +62,7 @@ export function ProposalForm({ onGenerate, defaultBusinessName }: ProposalFormPr
   const [briefError, setBriefError] = useState("");
   const [fileError, setFileError] = useState("");
   const [briefCharCount, setBriefCharCount] = useState(0);
+  const [showBriefAssistant, setShowBriefAssistant] = useState(false);
 
   useEffect(() => {
     if (defaultBusinessName) {
@@ -300,6 +302,30 @@ export function ProposalForm({ onGenerate, defaultBusinessName }: ProposalFormPr
         <p style={{ fontFamily: "Montserrat, sans-serif", fontSize: "1.125rem", color: "#8a7f78" }}>
           Fill in the details. Get a professional proposal in seconds.
         </p>
+      </div>
+
+      <div className="w-full max-w-[680px] mb-5">
+        <button
+          type="button"
+          onClick={() => setShowBriefAssistant((current) => !current)}
+          style={{
+            color: "#e8712a",
+            fontFamily: "DM Sans, Inter, sans-serif",
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            background: "transparent",
+            border: 0,
+            padding: 0,
+            textAlign: "left",
+          }}
+        >
+          Not sure this brief is ready? Ask the brief assistant →
+        </button>
+        {showBriefAssistant && (
+          <div style={{ marginTop: 14 }}>
+            <BriefAssistant />
+          </div>
+        )}
       </div>
 
       <form
