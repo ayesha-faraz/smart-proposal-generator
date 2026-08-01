@@ -126,10 +126,10 @@ Latest local Lighthouse scores:
 
 | Category | Score |
 | --- | ---: |
-| Performance | 61 |
+| Performance | 97 |
 | Accessibility | 92 |
 | Best Practices | 100 |
-| SEO | 58 |
+| SEO | 54 |
 
 ## Deployment
 

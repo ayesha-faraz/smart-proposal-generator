@@ -54,12 +54,12 @@
 
 | Category | Score |
 | --- | ---: |
-| Performance | 61 |
+| Performance | 97 |
 | Accessibility | 92 |
 | Best Practices | 100 |
-| SEO | 58 |
+| SEO | 54 |
 
 ## Known Release Notes
 
-- Vite reports a large JavaScript chunk. This does not block deployment, but route-level code splitting should be prioritized.
+- Vite reports large on-demand PDF export chunks. This does not block deployment because they load only when a user downloads a PDF.
 - SEO is reduced because `index.html` currently sets `noindex, nofollow`. Remove that only when production indexing is intended.
