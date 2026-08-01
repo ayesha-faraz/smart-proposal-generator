@@ -4,6 +4,7 @@ import cors from "cors";
 import healthRoutes from "./routes/health.routes.js";
 import proposalRoutes from "./routes/proposals.routes.js";
 import userRoutes from "./routes/users.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 const app = express();
 
@@ -19,13 +20,14 @@ app.get("/", (_req, res) => {
   res.json({
     name: "Propel Backend API",
     status: "running",
-    routes: ["/api/health", "/api/users", "/api/proposals"],
+    routes: ["/api/health", "/api/users", "/api/proposals", "/api/ai"],
   });
 });
 
 app.use("/api/health", healthRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/proposals", proposalRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
