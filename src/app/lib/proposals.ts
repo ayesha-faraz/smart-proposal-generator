@@ -1,3 +1,5 @@
+import html2pdf from "html2pdf.js";
+import { jsPDF } from "jspdf";
 import { ProposalFormData } from "../components/ProposalForm";
 import { SavedProposalRecord } from "./supabase";
 import targetIconUrl from "../../assets/brand/propel-mark-transparent.png";
@@ -438,10 +440,6 @@ const proposalRecordFromAppProposal = (proposal: AppProposal) => ({
 });
 
 export const downloadPDF = async (proposal: AppProposal) => {
-  const [{ default: html2pdf }, { jsPDF }] = await Promise.all([
-    import("html2pdf.js"),
-    import("jspdf"),
-  ]);
   const pdfProposal = proposalRecordFromAppProposal(proposal);
   const brandMarkDataUrl = await imageUrlToDataUrl(targetIconUrl).catch(() => "");
 

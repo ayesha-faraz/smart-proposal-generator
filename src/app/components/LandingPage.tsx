@@ -1,16 +1,8 @@
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { Briefcase, Users, FileText, Rocket } from 'lucide-react';
-
-const BrandMark = ({ className = '' }: { className?: string }) => (
-  <span
-    aria-hidden="true"
-    className={`inline-flex items-center justify-center rounded-full font-bold ${className}`}
-    style={{ backgroundColor: '#E3EED4', color: '#375534' }}
-  >
-    P
-  </span>
-);
+import logoImg from "../../assets/brand/propel-logo-transparent.png";
+import targetIcon from "../../assets/brand/propel-mark-transparent.png";
 
 export default function LandingPage() {
   return (
@@ -40,10 +32,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           <Link to="/" className="inline-flex transition-transform duration-200 hover:scale-[1.03]" aria-label="Go to Propel homepage">
-            <span className="inline-flex items-center gap-2">
-              <BrandMark className="w-8 h-8 text-sm" />
-              <span className="font-semibold text-lg" style={{ color: '#0F2A1D' }}>Propel</span>
-            </span>
+            <img src={logoImg} alt="Propel - Global B2B Marketplace logo" className="h-10 w-auto" />
           </Link>
 
           <div className="flex items-center gap-8">
@@ -150,9 +139,9 @@ export default function LandingPage() {
                 }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="font-semibold" style={{ color: '#0F2A1D' }}>
+                  <h3 className="font-semibold" style={{ color: '#0F2A1D' }}>
                     Social Media Campaign
-                  </div>
+                  </h3>
                   <span className="px-3 py-1 text-xs rounded-full" style={{ backgroundColor: 'rgba(55,85,52,0.1)', color: '#375534' }}>
                     $5-10k
                   </span>
@@ -184,15 +173,13 @@ export default function LandingPage() {
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E3EED4' }}>
-                    <motion.span
-                      aria-hidden="true"
-                      className="font-bold text-sm"
-                      style={{ color: '#375534' }}
+                    <motion.img
+                      src={targetIcon}
+                      alt="Propel target icon"
+                      className="w-5 h-5"
                       animate={{ rotate: [0, 8, 0] }}
                       transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      P
-                    </motion.span>
+                    />
                   </div>
                   <div>
                     <div className="font-semibold text-sm" style={{ color: '#0F2A1D' }}>
@@ -224,7 +211,6 @@ export default function LandingPage() {
       {/* How it Works */}
       <section id="how-it-works" className="relative z-10 py-20 px-8" style={{ backgroundColor: '#0F2A1D' }}>
         <div className="max-w-7xl mx-auto">
-          <h2 className="sr-only">How it works</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               { num: '01', icon: Briefcase, title: 'Post a Brief', desc: 'Share your project needs and requirements' },
@@ -241,15 +227,14 @@ export default function LandingPage() {
                 className="relative text-center"
               >
                 <div className="flex justify-center mb-4">
-                  <motion.span
-                    aria-hidden="true"
-                    className="inline-flex w-8 h-8 items-center justify-center rounded-full font-bold"
-                    style={{ backgroundColor: 'rgba(174,195,176,0.18)', color: '#AEC3B0' }}
+                  <motion.img
+                    src={targetIcon}
+                    alt="Propel target icon"
+                    className="w-8 h-8"
+                    style={{ filter: 'brightness(0) saturate(100%) invert(77%) sepia(11%) saturate(430%) hue-rotate(83deg) brightness(96%) contrast(90%)' }}
                     animate={{ scale: [1, 1.08, 1], rotate: [0, 5, 0] }}
                     transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.15 }}
-                  >
-                    {step.num}
-                  </motion.span>
+                  />
                 </div>
                 <div
                   className="text-6xl mb-4"
@@ -365,7 +350,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8">
             <Link to="/" className="inline-flex transition-transform duration-200 hover:scale-[1.03]" aria-label="Go to Propel homepage">
-              <BrandMark className="w-6 h-6 text-xs mb-4 md:mb-0" />
+              <img src={targetIcon} alt="Propel target icon" className="w-6 h-6 mb-4 md:mb-0" style={{ filter: 'brightness(0) saturate(100%) invert(54%) sepia(13%) saturate(891%) hue-rotate(78deg) brightness(92%) contrast(89%)' }} />
             </Link>
             <div className="flex items-center gap-8 mb-4 md:mb-0">
               <a href="#entrepreneurs" className="text-sm hover:opacity-70 transition-opacity" style={{ color: '#AEC3B0' }}>
