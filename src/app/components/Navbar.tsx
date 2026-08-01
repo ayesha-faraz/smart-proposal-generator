@@ -1,104 +1,48 @@
-import { Zap } from "lucide-react";
+﻿import { Link } from 'react-router';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import logoImage from '../../assets/brand/propel-logo-transparent.png';
 
-interface NavbarProps {
-  onMyProposalsClick?: () => void;
-  onLogoClick?: () => void;
-  onLogout?: () => void;
-  currentPage?: "form" | "proposals";
-  userEmail?: string;
-}
-
-export function Navbar({ onMyProposalsClick, onLogoClick, onLogout, currentPage = "form", userEmail }: NavbarProps) {
+export function Navbar() {
   return (
-    <nav className="w-full px-6 py-5 flex items-center justify-between fadeInDown">
-      <button
-        onClick={onLogoClick}
-        className="flex items-center gap-2"
-        style={{
-          cursor: 'pointer',
-          userSelect: 'none',
-          background: 'transparent',
-          border: 'none',
-          padding: 0,
-        }}
-        onMouseEnter={(e) => {
-          const textElement = e.currentTarget.querySelector('span');
-          const iconElement = e.currentTarget.querySelector('svg');
-          if (textElement) {
-            (textElement as HTMLElement).style.color = '#e8712a';
-          }
-          if (iconElement) {
-            (iconElement as HTMLElement).style.transform = 'scale(1.1)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          const textElement = e.currentTarget.querySelector('span');
-          const iconElement = e.currentTarget.querySelector('svg');
-          if (textElement) {
-            (textElement as HTMLElement).style.color = '#f5f0eb';
-          }
-          if (iconElement) {
-            (iconElement as HTMLElement).style.transform = 'scale(1)';
-          }
-        }}
-      >
-        <Zap
-          className="w-5 h-5"
-          style={{
-            color: '#e8712a',
-            transition: 'transform 0.2s ease',
-          }}
-        />
-        <span
-          className="text-xl"
-          style={{
-            fontFamily: 'Mona Sans, sans-serif',
-            fontWeight: '700',
-            color: '#f5f0eb',
-            transition: 'color 0.2s ease',
-          }}
-        >
-          Propel
-        </span>
-      </button>
+    <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-[12px] border-b border-[rgba(174,195,176,0.2)] z-50">
+      <div className="max-w-[1400px] mx-auto px-8 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center transition-transform duration-200 hover:scale-[1.02]" aria-label="Go to Propel homepage">
+          <ImageWithFallback
+            src={logoImage}
+            alt="Propel"
+            className="h-10 w-auto"
+          />
+        </Link>
 
-      <div className="flex items-center gap-6">
-        <button
-          onClick={onMyProposalsClick}
-          style={{
-            color: currentPage === "proposals" ? '#f5f0eb' : '#8a7f78',
-            fontFamily: 'DM Sans, Inter, sans-serif',
-            transition: 'color 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = '#f5f0eb';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = currentPage === "proposals" ? '#f5f0eb' : '#8a7f78';
-          }}
-        >
-          My Proposals
-        </button>
+        <div className="flex items-center gap-8">
+          <Link to="/#entrepreneurs" className="text-sm text-[#375534] hover:text-[#0F2A1D] transition-colors">
+            For Entrepreneurs
+          </Link>
+          <Link to="/#agencies" className="text-sm text-[#375534] hover:text-[#0F2A1D] transition-colors">
+            For Agencies
+          </Link>
+          <Link to="/agency/browse" className="text-sm text-[#375534] hover:text-[#0F2A1D] transition-colors">
+            Browse
+          </Link>
+          <Link to="/#how-it-works" className="text-sm text-[#375534] hover:text-[#0F2A1D] transition-colors">
+            How it Works
+          </Link>
+        </div>
 
-        {userEmail && (
-          <button
-            type="button"
-            onClick={onLogout}
-            style={{
-              color: '#8a7f78',
-              fontFamily: 'DM Sans, Inter, sans-serif',
-              transition: 'color 0.2s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#e05c5c';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#8a7f78';
-            }}
+        <div className="flex items-center gap-3">
+          <Link
+            to="/login"
+            className="px-5 py-2 text-sm border border-[#375534] text-[#375534] rounded-lg hover:bg-[rgba(55,85,52,0.05)] transition-all"
           >
-            Logout
-          </button>
-        )}
+            Login
+          </Link>
+          <Link
+            to="/account-type"
+            className="px-5 py-2 text-sm bg-[#375534] text-[#E3EED4] rounded-lg hover:scale-105 hover:shadow-[0_8px_24px_rgba(55,85,52,0.25)] transition-all duration-200"
+          >
+            Get Started
+          </Link>
+        </div>
       </div>
     </nav>
   );

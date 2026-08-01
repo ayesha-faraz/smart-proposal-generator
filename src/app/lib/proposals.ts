@@ -2,6 +2,7 @@ import html2pdf from "html2pdf.js";
 import { jsPDF } from "jspdf";
 import { ProposalFormData } from "../components/ProposalForm";
 import { SavedProposalRecord } from "./supabase";
+import targetIconUrl from "../../assets/brand/propel-mark-transparent.png";
 
 const escapeHTML = (value = "") =>
   value
@@ -10,6 +11,17 @@ const escapeHTML = (value = "") =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+
+const imageUrlToDataUrl = async (url: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
 
 export interface AppProposal {
   id: string;
@@ -429,16 +441,19 @@ const proposalRecordFromAppProposal = (proposal: AppProposal) => ({
 
 export const downloadPDF = async (proposal: AppProposal) => {
   const pdfProposal = proposalRecordFromAppProposal(proposal);
+  const brandMarkDataUrl = await imageUrlToDataUrl(targetIconUrl).catch(() => "");
 
   const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 52;
   const contentWidth = pageWidth - margin * 2;
-  const orange = [232, 113, 42] as const;
-  const ink = [26, 18, 16] as const;
-  const muted = [118, 103, 92] as const;
-  const border = [238, 224, 211] as const;
+  const brand = [55, 85, 52] as const;
+  const ink = [15, 42, 29] as const;
+  const muted = [107, 144, 113] as const;
+  const border = [174, 195, 176] as const;
+  const surface = [247, 250, 243] as const;
+  const soft = [227, 238, 212] as const;
   let y = margin;
 
   const clean = (value = "") =>
@@ -461,7 +476,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
     color(muted);
     doc.text(`${pdfProposal.business_name} - prepared for ${pdfProposal.client_name}`, margin, footerY);
     doc.setFont("helvetica", "bold");
-    color(orange);
+    color(brand);
     doc.text("Propel", pageWidth - margin, footerY, { align: "right" });
   };
 
@@ -499,7 +514,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
     y += level === 1 ? 12 : 8;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(level === 1 ? 18 : level === 2 ? 14.5 : 11);
-    color(level === 3 ? orange : ink);
+    color(level === 3 ? brand : ink);
     doc.text(clean(text), margin, y);
     y += 10;
     if (level !== 3) {
@@ -524,7 +539,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
     const cellWidth = contentWidth / columnCount;
     const padding = 8;
     ensure(34);
-    doc.setFillColor(orange[0], orange[1], orange[2]);
+    doc.setFillColor(brand[0], brand[1], brand[2]);
     doc.rect(margin, y, contentWidth, 28, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
@@ -535,8 +550,11 @@ export const downloadPDF = async (proposal: AppProposal) => {
       const cellLines = row.map((cell) => doc.splitTextToSize(clean(cell), cellWidth - padding * 2));
       const rowHeight = Math.max(34, ...cellLines.map((lines) => lines.length * 12 + 18));
       ensure(rowHeight);
-      const shade = rowIndex % 2 === 0 ? 255 : 250;
-      doc.setFillColor(shade, rowIndex % 2 === 0 ? 255 : 247, rowIndex % 2 === 0 ? 255 : 244);
+      if (rowIndex % 2 === 0) {
+        doc.setFillColor(255, 255, 255);
+      } else {
+        doc.setFillColor(surface[0], surface[1], surface[2]);
+      }
       doc.rect(margin, y, contentWidth, rowHeight, "F");
       doc.setDrawColor(border[0], border[1], border[2]);
       doc.rect(margin, y, contentWidth, rowHeight);
@@ -553,13 +571,16 @@ export const downloadPDF = async (proposal: AppProposal) => {
   doc.rect(0, 0, pageWidth, pageHeight, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  color(orange);
-  doc.text(pdfProposal.business_name || "Propel", margin, y);
+  color(brand);
+  if (brandMarkDataUrl) {
+    doc.addImage(brandMarkDataUrl, "PNG", margin, y - 18, 28, 28);
+  }
+  doc.text(pdfProposal.business_name || "Propel", margin + (brandMarkDataUrl ? 36 : 0), y);
   if (pdfProposal.tagline) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9);
     color(muted);
-    doc.text(clean(pdfProposal.tagline), margin, y + 17);
+    doc.text(clean(pdfProposal.tagline), margin + (brandMarkDataUrl ? 36 : 0), y + 17);
   }
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
@@ -567,15 +588,15 @@ export const downloadPDF = async (proposal: AppProposal) => {
   doc.text(`Prepared for: ${pdfProposal.client_name}`, pageWidth - margin, y, { align: "right" });
   doc.text(new Date(pdfProposal.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), pageWidth - margin, y + 14, { align: "right" });
   y += 44;
-  doc.setDrawColor(orange[0], orange[1], orange[2]);
+  doc.setDrawColor(brand[0], brand[1], brand[2]);
   doc.setLineWidth(2);
   doc.line(margin, y, pageWidth - margin, y);
   y += 28;
 
-  doc.setFillColor(255, 246, 239);
-  doc.setDrawColor(240, 212, 189);
+  doc.setFillColor(surface[0], surface[1], surface[2]);
+  doc.setDrawColor(border[0], border[1], border[2]);
   doc.roundedRect(margin, y, contentWidth, 112, 8, 8, "FD");
-  doc.setFillColor(orange[0], orange[1], orange[2]);
+  doc.setFillColor(brand[0], brand[1], brand[2]);
   doc.rect(margin, y, 5, 112, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(24);
@@ -587,7 +608,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
   doc.text(`Professional Service Proposal - ${pdfProposal.service_offering}`, margin + 24, y + 70);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
-  color(orange);
+  color(brand);
   doc.text([pdfProposal.service_offering, pdfProposal.client_industry, `${pdfProposal.budget} ${pdfProposal.currency}`.trim(), pdfProposal.timeline, pdfProposal.urgency].filter(Boolean).join("  |  "), margin + 24, y + 92);
   y += 138;
 
@@ -625,7 +646,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
     if (lineText.startsWith("- ") || lineText.startsWith("* ")) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
-      color(orange);
+      color(brand);
       ensure(18);
       doc.text(">", margin + 2, y);
       wrapped(lineText.slice(2), 10, 14, ink, "normal", 18);
@@ -643,19 +664,19 @@ export const downloadPDF = async (proposal: AppProposal) => {
 
   if (pdfProposal.phone || pdfProposal.email || pdfProposal.website) {
     ensure(92);
-    doc.setFillColor(26, 18, 16);
+    doc.setFillColor(15, 42, 29);
     doc.roundedRect(margin, y, contentWidth, 76, 8, 8, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(245, 240, 235);
+    doc.setTextColor(247, 250, 243);
     doc.text(pdfProposal.business_name, margin + 18, y + 24);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.setTextColor(196, 184, 176);
+    doc.setTextColor(174, 195, 176);
     doc.text([pdfProposal.phone && `Phone/WhatsApp: ${pdfProposal.phone}`, pdfProposal.email && `Email: ${pdfProposal.email}`, pdfProposal.website && `Website: ${pdfProposal.website}`].filter(Boolean) as string[], margin + 18, y + 40);
     doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
-    color(orange);
+    color(soft);
     doc.text("Ready to move forward? Let's talk.", pageWidth - margin - 18, y + 38, { align: "right" });
     y += 96;
   }
@@ -666,7 +687,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
 
   const logoHTML = pdfProposal.logo
     ? `<img src="${pdfProposal.logo}" style="height:48px;max-width:140px;object-fit:contain;" />`
-    : `<div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#e8712a;">Propel</div>`;
+    : `<div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#375534;">Propel</div>`;
 
   const content = document.createElement("div");
   content.style.position = "fixed";
@@ -674,7 +695,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
   content.style.top = "0";
   content.style.width = "794px";
   content.style.background = "#ffffff";
-  content.style.color = "#1a1210";
+  content.style.color = "#0F2A1D";
   content.style.zIndex = "2147483647";
   content.style.opacity = "1";
   content.style.pointerEvents = "none";
@@ -682,48 +703,48 @@ export const downloadPDF = async (proposal: AppProposal) => {
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
     .pdf-proposal, .pdf-proposal * { box-sizing: border-box; }
-    .pdf-proposal { font-family: 'Inter', Arial, sans-serif; background: #fff; color: #1a1210; font-size: 13px; line-height: 1.7; width: 794px; min-height: 1123px; }
+    .pdf-proposal { font-family: 'Inter', Arial, sans-serif; background: #fff; color: #0F2A1D; font-size: 13px; line-height: 1.7; width: 794px; min-height: 1123px; }
     .page { padding: 52px 58px 46px; max-width: 794px; margin: 0 auto; background: #fff; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 24px; margin-bottom: 32px; border-bottom: 3px solid #e8712a; }
-    .header-right { text-align: right; font-size: 11px; color: #8a7f78; line-height: 1.8; }
-    .header-right strong { color: #1a1210; font-weight: 600; }
-    .date-badge { display: inline-block; background: #fff5ee; border: 1px solid #e8712a; color: #e8712a; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 500; margin-top: 6px; }
-    .title-section { margin-bottom: 34px; padding: 30px; background: #fff6ef; border: 1px solid #f0d4bd; border-radius: 8px; border-left: 5px solid #e8712a; page-break-inside: avoid; }
-    .proposal-title { font-family: 'Playfair Display', Georgia, serif; font-size: 30px; font-weight: 700; color: #1a1210; margin-bottom: 10px; line-height: 1.25; }
-    .proposal-subtitle { font-size: 13px; color: #8a7f78; margin-bottom: 16px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 24px; margin-bottom: 32px; border-bottom: 3px solid #375534; }
+    .header-right { text-align: right; font-size: 11px; color: #6B9071; line-height: 1.8; }
+    .header-right strong { color: #0F2A1D; font-weight: 600; }
+    .date-badge { display: inline-block; background: #E3EED4; border: 1px solid #AEC3B0; color: #375534; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 500; margin-top: 6px; }
+    .title-section { margin-bottom: 34px; padding: 30px; background: #F7FAF3; border: 1px solid #AEC3B0; border-radius: 8px; border-left: 5px solid #375534; page-break-inside: avoid; }
+    .proposal-title { font-family: 'Playfair Display', Georgia, serif; font-size: 30px; font-weight: 700; color: #0F2A1D; margin-bottom: 10px; line-height: 1.25; }
+    .proposal-subtitle { font-size: 13px; color: #6B9071; margin-bottom: 16px; }
     .tags { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tag { background: #fff; border: 1px solid #e8d5c4; color: #c45a1a; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 500; }
-    h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: #1a1210; margin: 34px 0 12px; padding-bottom: 10px; border-bottom: 1px solid #f0e4d8; page-break-after: avoid; }
-    h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 19px; font-weight: 700; color: #1a1210; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #f0e4d8; page-break-after: avoid; }
-    h3 { font-size: 14px; font-weight: 600; color: #c45a1a; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.05em; }
-    p { margin: 0 0 13px; color: #2a2018; line-height: 1.76; }
-    em { color: #8a7f78; font-style: italic; }
-    strong { font-weight: 600; color: #1a1210; }
+    .tag { background: #fff; border: 1px solid #AEC3B0; color: #375534; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 500; }
+    h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: #0F2A1D; margin: 34px 0 12px; padding-bottom: 10px; border-bottom: 1px solid #AEC3B0; page-break-after: avoid; }
+    h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 19px; font-weight: 700; color: #0F2A1D; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #AEC3B0; page-break-after: avoid; }
+    h3 { font-size: 14px; font-weight: 600; color: #375534; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    p { margin: 0 0 13px; color: #375534; line-height: 1.76; }
+    em { color: #6B9071; font-style: italic; }
+    strong { font-weight: 600; color: #0F2A1D; }
     ul { margin: 10px 0 18px 0; padding-left: 0; list-style: none; page-break-inside: avoid; }
-    ul li { padding: 6px 0 6px 20px; position: relative; color: #2a2018; border-bottom: 1px solid #faf5f0; }
-    ul li::before { content: '>'; position: absolute; left: 0; color: #e8712a; font-weight: 700; }
+    ul li { padding: 6px 0 6px 20px; position: relative; color: #375534; border-bottom: 1px solid #E3EED4; }
+    ul li::before { content: '>'; position: absolute; left: 0; color: #375534; font-weight: 700; }
     table { width: 100%; border-collapse: collapse; margin: 20px 0 28px; font-size: 12px; overflow: hidden; }
-    thead tr { background: #e8712a; }
+    thead tr { background: #375534; }
     th { padding: 12px 16px; text-align: left; font-weight: 600; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
-    tbody tr:nth-child(even) { background: #fdf8f5; }
+    tbody tr:nth-child(even) { background: #F7FAF3; }
     tbody tr:nth-child(odd) { background: #fff; }
-    td { padding: 12px 16px; border-bottom: 1px solid #f0e4d8; color: #2a2018; vertical-align: top; }
+    td { padding: 12px 16px; border-bottom: 1px solid #AEC3B0; color: #375534; vertical-align: top; }
     tr:last-child td { border-bottom: none; }
-    hr { border: none; border-top: 1px solid #f0e4d8; margin: 32px 0; }
-    .contact-section { background: #1a1210; border-radius: 8px; padding: 24px 30px; margin: 30px 0; display: flex; justify-content: space-between; align-items: center; page-break-inside: avoid; }
+    hr { border: none; border-top: 1px solid #AEC3B0; margin: 32px 0; }
+    .contact-section { background: #0F2A1D; border-radius: 8px; padding: 24px 30px; margin: 30px 0; display: flex; justify-content: space-between; align-items: center; page-break-inside: avoid; }
     .contact-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: #f5f0eb; margin-bottom: 6px; }
-    .contact-details { font-size: 11px; color: #8a7f78; line-height: 1.8; }
-    .footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #f0e4d8; display: flex; justify-content: space-between; align-items: center; }
-    .footer-left { font-size: 10px; color: #8a7f78; line-height: 1.7; }
-    .footer-brand { font-family: 'Playfair Display', serif; font-size: 18px; color: #e8712a; font-weight: 700; }
-    .validity { font-size: 10px; color: #c4b8b0; font-style: italic; margin-top: 4px; }
+    .contact-details { font-size: 11px; color: #AEC3B0; line-height: 1.8; }
+    .footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid #AEC3B0; display: flex; justify-content: space-between; align-items: center; }
+    .footer-left { font-size: 10px; color: #6B9071; line-height: 1.7; }
+    .footer-brand { font-family: 'Playfair Display', serif; font-size: 18px; color: #375534; font-weight: 700; }
+    .validity { font-size: 10px; color: #AEC3B0; font-style: italic; margin-top: 4px; }
   </style>
   <div class="pdf-proposal">
   <div class="page">
     <div class="header">
       <div>
         ${logoHTML}
-        ${pdfProposal.tagline ? `<div style="font-size:11px;color:#8a7f78;margin-top:4px;font-style:italic;">${escapeHTML(pdfProposal.tagline)}</div>` : ""}
+        ${pdfProposal.tagline ? `<div style="font-size:11px;color:#6B9071;margin-top:4px;font-style:italic;">${escapeHTML(pdfProposal.tagline)}</div>` : ""}
       </div>
       <div class="header-right">
         <div>Prepared for: <strong>${escapeHTML(pdfProposal.client_name)}</strong></div>
@@ -761,7 +782,7 @@ export const downloadPDF = async (proposal: AppProposal) => {
           ${pdfProposal.website ? `<div>Website: ${escapeHTML(pdfProposal.website)}</div>` : ""}
         </div>
       </div>
-      <div style="font-family:'Playfair Display',serif;font-size:13px;color:#e8712a;font-style:italic;">
+      <div style="font-family:'Playfair Display',serif;font-size:13px;color:#E3EED4;font-style:italic;">
         Ready to move forward?<br/>Let's talk.
       </div>
     </div>`
