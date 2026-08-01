@@ -121,6 +121,8 @@ The Supabase schema is included in `supabase-schema.sql`.
 - Latest Lighthouse reports:
   - `docs/audits/lighthouse-local.report.html`
   - `docs/audits/lighthouse-local.report.json`
+- Final Word submission packet:
+  - `docs/deliverables/Propel_Submission_Packet_Lighthouse_97.docx`
 
 Latest local Lighthouse scores:
 
