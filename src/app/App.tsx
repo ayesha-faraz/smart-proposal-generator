@@ -18,6 +18,7 @@ import MyProposals from './components/MyProposals';
 import Settings from './components/Settings';
 import DealIntelligence from './components/DealIntelligence';
 import DealRoom from './components/DealRoom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
   const [userType, setUserType] = useState<'entrepreneur' | 'agency' | null>(null);
@@ -52,7 +53,7 @@ export default function App() {
           <Route path="/agency/dashboard" element={<AgencyDashboard />} />
           <Route path="/agency/browse" element={<OpportunityMarketplace />} />
           <Route path="/agency/opportunity/:id" element={<OpportunityDetail />} />
-          <Route path="/agency/generate-proposal/:id" element={<AIProposalGenerator />} />
+          <Route path="/agency/generate-proposal/:id" element={<ErrorBoundary><AIProposalGenerator /></ErrorBoundary>} />
           <Route path="/agency/proposals" element={<MyProposals />} />
           <Route path="/agency/proposal/:id" element={<ProposalPreview />} />
           <Route path="/agency/deal-room" element={<DealRoom />} />
