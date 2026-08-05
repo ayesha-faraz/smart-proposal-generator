@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { clearPropelSession } from "../lib/logout";
 
 interface UserMenuProps {
   userEmail: string;
-  onLogout: () => void;
 }
 
-export function UserMenu({ userEmail, onLogout }: UserMenuProps) {
+export function UserMenu({ userEmail }: UserMenuProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -14,12 +12,9 @@ export function UserMenu({ userEmail, onLogout }: UserMenuProps) {
     return email.charAt(0).toUpperCase();
   };
 
-  const handleLogout = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setShowDropdown(false);
-    clearPropelSession();
-    onLogout();
+  const handleLogout = () => {
+    localStorage.removeItem('propel_user');
+    window.location.href = '/';
   };
 
   // Close dropdown when clicking outside
@@ -112,7 +107,6 @@ export function UserMenu({ userEmail, onLogout }: UserMenuProps) {
 
           {/* Logout Button */}
           <button
-            type="button"
             onClick={handleLogout}
             className="w-full text-left"
             style={{

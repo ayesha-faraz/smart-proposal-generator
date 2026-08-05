@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { Zap, Eye, EyeOff } from "lucide-react";
 import { BackgroundOrbs } from "./BackgroundOrbs";
-import {
-  sendPasswordReset,
-  signInWithEmail,
-  signInWithGoogle,
-  signUpWithEmail,
-  validateStrongPassword,
-  type UserRole,
-} from "../lib/supabase";
 
 interface LoginRegisterProps {
-  onLogin: () => void;
+  onLogin: (email: string, name: string, businessName: string) => void;
 }
+
+const HARDCODED_CREDENTIALS = {
+  email: "demo@propel.com",
+  password: "propel123",
+  name: "Alex",
+  businessName: "Propel Studio",
+};
 
 export function LoginRegister({ onLogin }: LoginRegisterProps) {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -22,13 +21,10 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
     businessName: "",
     email: "",
     password: "",
-    role: "agency" as Exclude<UserRole, "admin">,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [notice, setNotice] = useState("");
   const [fadeContent, setFadeContent] = useState(false);
   const [shakeError, setShakeError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -43,10 +39,27 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
     }, 200);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDemoLogin = () => {
+    const userData = {
+      email: HARDCODED_CREDENTIALS.email,
+      name: HARDCODED_CREDENTIALS.name,
+      businessName: HARDCODED_CREDENTIALS.businessName,
+    };
+
+    setFormData({
+      fullName: userData.name,
+      businessName: userData.businessName,
+      email: HARDCODED_CREDENTIALS.email,
+      password: HARDCODED_CREDENTIALS.password,
+    });
+    setErrors({});
+    localStorage.setItem("propel_user", JSON.stringify(userData));
+    onLogin(userData.email, userData.name, userData.businessName);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
-    setNotice("");
 
     if (!formData.email) {
       newErrors.email = "Email is required";
@@ -56,9 +69,6 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (activeTab === "register") {
-      const passwordError = validateStrongPassword(formData.password);
-      if (passwordError) newErrors.password = passwordError;
     }
 
     if (activeTab === "register") {
@@ -70,66 +80,26 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
       }
     }
 
+    if (activeTab === "login") {
+      // Check hardcoded credentials
+      if (formData.email !== HARDCODED_CREDENTIALS.email || formData.password !== HARDCODED_CREDENTIALS.password) {
+        newErrors.credentials = "Invalid email or password";
+        setShakeError(true);
+        setTimeout(() => setShakeError(false), 400);
+      }
+    }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      setIsSubmitting(true);
-      try {
-        if (activeTab === "register") {
-          await signUpWithEmail({
-            email: formData.email,
-            password: formData.password,
-            name: formData.fullName,
-            businessName: formData.businessName,
-            role: formData.role,
-          });
-          setNotice("Check your email to verify your account before signing in.");
-          setActiveTab("login");
-          return;
-        }
-
-        await signInWithEmail(formData.email, formData.password);
-        onLogin();
-      } catch (error) {
-        console.error("Supabase login/register failed", error);
-        const message = error instanceof Error ? error.message : "Authentication failed. Please try again.";
-        setErrors({ credentials: message });
-        setShakeError(true);
-        setTimeout(() => setShakeError(false), 400);
-      } finally {
-        setIsSubmitting(false);
-      }
-    }
-  };
-
-  const handlePasswordReset = async () => {
-    if (!formData.email || !validateEmail(formData.email)) {
-      setErrors({ email: "Enter your account email first" });
-      return;
-    }
-
-    setIsSubmitting(true);
-    setErrors({});
-    setNotice("");
-    try {
-      await sendPasswordReset(formData.email);
-      setNotice("Password reset link sent. Check your email.");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Could not send reset email.";
-      setErrors({ credentials: message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setErrors({});
-    setNotice("");
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Google login is not available yet.";
-      setErrors({ credentials: message });
+      // Store user data in localStorage
+      const userData = {
+        email: HARDCODED_CREDENTIALS.email,
+        name: HARDCODED_CREDENTIALS.name,
+        businessName: HARDCODED_CREDENTIALS.businessName,
+      };
+      localStorage.setItem("propel_user", JSON.stringify(userData));
+      onLogin(userData.email, userData.name, userData.businessName);
     }
   };
 
@@ -140,6 +110,35 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
     >
       {/* Background Gradients */}
       <BackgroundOrbs />
+
+      <button
+        type="button"
+        onClick={handleDemoLogin}
+        className="fixed right-6 top-6 z-20 rounded-full px-5 py-3"
+        style={{
+          background: "rgba(232, 113, 42, 0.14)",
+          border: "1px solid rgba(232, 113, 42, 0.45)",
+          color: "#f5f0eb",
+          fontFamily: "DM Sans, Inter, sans-serif",
+          fontSize: "0.875rem",
+          fontWeight: 700,
+          boxShadow: "0 12px 30px rgba(232, 113, 42, 0.16)",
+          backdropFilter: "blur(14px)",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#e8712a";
+          e.currentTarget.style.color = "#0c0a09";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(232, 113, 42, 0.14)";
+          e.currentTarget.style.color = "#f5f0eb";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        Demo login
+      </button>
 
       {/* Login/Register Card */}
       <div
@@ -234,29 +233,6 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
               }}
             >
               {errors.credentials}
-            </p>
-          </div>
-        )}
-
-        {notice && (
-          <div
-            style={{
-              background: "rgba(57, 181, 120, 0.1)",
-              border: "1px solid #39b578",
-              borderRadius: "12px",
-              padding: "12px 16px",
-              marginBottom: "20px",
-            }}
-          >
-            <p
-              style={{
-                color: "#7ee0a6",
-                fontSize: "0.875rem",
-                fontFamily: "DM Sans, Inter, sans-serif",
-                textAlign: "center",
-              }}
-            >
-              {notice}
             </p>
           </div>
         )}
@@ -363,37 +339,6 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
                     {errors.businessName}
                   </p>
                 )}
-              </div>
-
-              <div className="mb-5">
-                <label
-                  className="block mb-2 uppercase tracking-wide"
-                  style={{
-                    fontFamily: "DM Sans, Inter, sans-serif",
-                    fontSize: "0.75rem",
-                    color: "#8a7f78",
-                  }}
-                >
-                  Account Type
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["agency", "entrepreneur"] as const).map((role) => (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role })}
-                      className="py-3 rounded-xl capitalize"
-                      style={{
-                        background: formData.role === role ? "#e8712a" : "rgba(255, 255, 255, 0.04)",
-                        color: formData.role === role ? "#0c0a09" : "#8a7f78",
-                        fontFamily: "DM Sans, Inter, sans-serif",
-                        fontWeight: formData.role === role ? "700" : "500",
-                      }}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
               </div>
             </>
           )}
@@ -511,7 +456,6 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
             className="w-full py-4 rounded-full"
             style={{
               background: "linear-gradient(135deg, #e8712a 0%, #c45a1a 100%)",
@@ -522,7 +466,6 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
               boxShadow: "0 0 24px rgba(232, 113, 42, 0.4)",
               transition: "all 0.2s ease",
               transform: "scale(1)",
-              opacity: isSubmitting ? 0.7 : 1,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.02)";
@@ -535,41 +478,8 @@ export function LoginRegister({ onLogin }: LoginRegisterProps) {
               e.currentTarget.style.boxShadow = "0 0 24px rgba(232, 113, 42, 0.4)";
             }}
           >
-            {isSubmitting ? "Please wait..." : activeTab === "login" ? "Login" : "Create Account"}
+            {activeTab === "login" ? "Login" : "Create Account"}
           </button>
-
-          {activeTab === "login" && (
-            <div className="mt-4 grid gap-3">
-              <button
-                type="button"
-                onClick={handlePasswordReset}
-                disabled={isSubmitting}
-                style={{
-                  color: "#e8712a",
-                  fontFamily: "DM Sans, Inter, sans-serif",
-                  fontSize: "0.875rem",
-                  fontWeight: "600",
-                }}
-              >
-                Forgot password?
-              </button>
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={isSubmitting}
-                className="w-full py-3 rounded-full"
-                style={{
-                  background: "rgba(255, 255, 255, 0.04)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  color: "#f5f0eb",
-                  fontFamily: "DM Sans, Inter, sans-serif",
-                  fontWeight: "600",
-                }}
-              >
-                Continue with Google
-              </button>
-            </div>
-          )}
 
           {/* Toggle Link */}
           <p

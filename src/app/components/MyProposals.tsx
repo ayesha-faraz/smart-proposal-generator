@@ -1,181 +1,255 @@
-import { motion } from "motion/react";
-import { Link } from "react-router";
-import { Copy, Download, Edit, Eye, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Sidebar } from "./Sidebar";
-import targetIcon from "../../assets/brand/propel-mark-transparent.png";
-import { downloadPDF, formDataToProposal } from "../lib/proposals";
-import { getLocalProposals, getOpportunityById } from "../lib/marketplace";
+import { ProposalFormData } from "./ProposalForm";
+import { BackgroundOrbs } from "./BackgroundOrbs";
+import { downloadProposalPdf } from "../lib/downloadProposalPdf";
 
-export default function MyProposals() {
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [notice, setNotice] = useState("");
-  const saved = getLocalProposals();
-  const sampleOpportunity = getOpportunityById("1");
-  const proposals = saved.length
-    ? saved
-    : [
-        formDataToProposal({
-          businessName: "Propel Studio",
-          tagline: "We turn business ambition into client-ready execution.",
-          phone: "+92 300 1234567",
-          website: "www.propelstudio.pk",
-          email: "hello@propelstudio.pk",
-          logo: null,
-          logoFileName: "",
-          clientName: sampleOpportunity.company,
-          clientIndustry: sampleOpportunity.industry,
-          clientWebsite: sampleOpportunity.website || "",
-          targetAudience: sampleOpportunity.targetAudience,
-          currentSituation: sampleOpportunity.currentSituation,
-          mainGoal: sampleOpportunity.mainGoal,
-          competitors: sampleOpportunity.competitors || "",
-          serviceOffering: "Web Design",
-          projectBrief: sampleOpportunity.brief,
-          budget: "2500000",
-          currency: "PKR",
-          timeline: "3 Months",
-          tone: "Professional",
-          urgency: "Soon",
-          language: "English",
-        }),
-      ];
+interface SavedProposal {
+  id: string;
+  formData: ProposalFormData;
+  dateGenerated: Date;
+}
 
-  const visibleProposals = useMemo(() => {
-    if (activeFilter === "All") return proposals;
-    return proposals.filter(() => activeFilter === "Draft");
-  }, [activeFilter, proposals]);
+interface MyProposalsProps {
+  proposals: SavedProposal[];
+  onViewProposal: (proposal: SavedProposal) => void;
+  onGenerateNew: () => void;
+}
+
+export function MyProposals({ proposals, onViewProposal, onGenerateNew }: MyProposalsProps) {
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const downloadPDF = (proposal: SavedProposal) => {
+    const { formData } = proposal;
+    downloadProposalPdf({
+      filename: `${formData.clientName} proposal`,
+      businessName: formData.businessName,
+      clientName: formData.clientName,
+      currentDate: formatDate(proposal.dateGenerated),
+      headline: `${formData.businessName} x ${formData.clientName}`,
+      subtitle: formData.mainGoal || formData.serviceOffering,
+      contactLines: [formData.businessName, formData.email, formData.phone, formData.website].filter(Boolean),
+      sections: [
+        {
+          title: "Client",
+          body: `${formData.clientName} is a ${formData.clientIndustry} business targeting ${formData.targetAudience || "their ideal customers"}.`,
+        },
+        { title: "Project Brief", body: formData.projectBrief },
+        {
+          title: "Recommended Service",
+          body: `${formData.serviceOffering} over ${formData.timeline}, in a ${formData.tone.toLowerCase()} tone.`,
+        },
+        {
+          title: "Investment",
+          body: `${formData.currency} ${formData.budget}`,
+        },
+        {
+          title: "Next Step",
+          body: "Open the full proposal preview for the detailed formatted export.",
+        },
+      ],
+      footer: `${formData.businessName} - Prepared exclusively for ${formData.clientName}.`,
+    });
+  };
 
   return (
-    <div className="flex min-h-screen relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-25 blur-[60px]"
-          style={{ background: "radial-gradient(circle, rgba(174,195,176,1) 0%, transparent 65%)" }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-15 blur-[50px]"
-          style={{ background: "radial-gradient(circle, rgba(107,144,113,1) 0%, transparent 60%)" }}
-        />
-      </div>
+    <div className="w-full min-h-screen px-6 py-12 page-transition relative">
+      {/* Background Gradients */}
+      <BackgroundOrbs />
 
-      <Sidebar userType="agency" />
-
-      <div className="flex-1 ml-60 relative z-10 p-8">
-        <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="max-w-7xl mx-auto relative" style={{ zIndex: 10 }}>
+        {/* Page Heading */}
+        <div className="mb-12 fadeInUp">
           <h1
-            className="text-3xl"
-            style={{ fontFamily: "Cormorant Garamond, serif", fontStyle: "italic", color: "#0F2A1D" }}
+            className="mb-3"
+            style={{
+              fontFamily: "Playfair Display, serif",
+              fontStyle: "italic",
+              fontSize: "2.5rem",
+              color: "#f5f0eb",
+            }}
           >
             My Proposals
           </h1>
-          <Link
-            to="/agency/browse"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
-            style={{ backgroundColor: "#375534", color: "#FFFFFF" }}
+          <p
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontSize: "1.125rem",
+              color: "#8a7f78",
+            }}
           >
-            <Sparkles size={16} />
-            Generate from brief
-          </Link>
+            All your previously generated proposals
+          </p>
         </div>
 
-        <div className="flex gap-2 mb-8">
-          {["All", "Draft", "Sent", "Shortlisted"].map((filter) => (
+        {/* Proposals Grid or Empty State */}
+        {proposals.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 fadeInUp" style={{ animationDelay: '0.2s', opacity: 0 }}>
+            <p
+              className="mb-6"
+              style={{
+                fontFamily: "DM Sans, Inter, sans-serif",
+                fontSize: "1.125rem",
+                color: "#8a7f78",
+              }}
+            >
+              No proposals yet. Generate your first one.
+            </p>
             <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+              onClick={onGenerateNew}
+              className="px-6 py-3 rounded-full"
               style={{
-                backgroundColor: activeFilter === filter ? "#375534" : "rgba(255,255,255,0.6)",
-                color: activeFilter === filter ? "#FFFFFF" : "#375534",
-                border: "1px solid rgba(174,195,176,0.4)",
+                background: "linear-gradient(135deg, #e8712a 0%, #c45a1a 100%)",
+                color: "#f5f0eb",
+                fontFamily: "DM Sans, Inter, sans-serif",
+                fontWeight: "700",
+                boxShadow: "0 0 24px rgba(232, 113, 42, 0.4)",
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.02)';
+                e.currentTarget.style.filter = 'brightness(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.filter = 'brightness(1)';
               }}
             >
-              {filter}
+              Generate Proposal
             </button>
-          ))}
-        </div>
-
-        <div className="space-y-4">
-          {visibleProposals.map((proposal, idx) => (
-            <motion.div
-              key={proposal.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-wrap xl:flex-nowrap items-center gap-6 p-6 rounded-[20px] backdrop-blur-[20px] transition-all hover:-translate-y-1"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.65)",
-                border: "1px solid rgba(174,195,176,0.35)",
-                boxShadow: "0 4px 24px rgba(15,42,29,0.06)",
-              }}
-            >
-              <img src={targetIcon} alt="Propel target icon" className="w-5 h-5 flex-shrink-0" />
-
-              <div className="flex-1 min-w-[220px]">
-                <div className="font-bold mb-1" style={{ color: "#0F2A1D" }}>
-                  {proposal.formData.clientName}
-                </div>
-                <div className="text-sm mb-2" style={{ color: "#6B9071" }}>
-                  {proposal.formData.mainGoal}
-                </div>
-                <span className="px-2 py-1 text-xs rounded-full" style={{ backgroundColor: "rgba(174,195,176,0.3)", color: "#375534" }}>
-                  {proposal.formData.serviceOffering}
-                </span>
-              </div>
-
-              <div className="text-right">
-                <div className="font-bold mb-1" style={{ color: "#375534" }}>
-                  {proposal.formData.budget} {proposal.formData.currency}
-                </div>
-                <div className="text-sm" style={{ color: "#6B9071" }}>
-                  {proposal.formData.timeline}
-                </div>
-              </div>
-
-              <span className="px-4 py-2 text-xs rounded-full font-medium" style={{ backgroundColor: "rgba(107,144,113,0.2)", color: "#375534" }}>
-                Draft
-              </span>
-
-              <div className="text-sm" style={{ color: "#6B9071" }}>
-                {proposal.dateGenerated.toLocaleDateString()}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Link to={`/agency/proposal/${proposal.id}`} className="p-2 rounded-lg hover:bg-white/60 transition-colors" title="View">
-                  <Eye size={18} style={{ color: "#375534" }} />
-                </Link>
-                <Link to="/agency/browse" className="p-2 rounded-lg hover:bg-white/60 transition-colors" title="Generate another">
-                  <Edit size={18} style={{ color: "#375534" }} />
-                </Link>
-                <button onClick={() => downloadPDF(proposal)} className="p-2 rounded-lg hover:bg-white/60 transition-colors" title="Download">
-                  <Download size={18} style={{ color: "#375534" }} />
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(proposal.generatedContent);
-                    setNotice("Proposal text copied.");
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {proposals.map((proposal, index) => (
+              <div
+                key={proposal.id}
+                className={`p-6 rounded-3xl fadeInUp stagger-${Math.min(index + 1, 10)}`}
+                style={{
+                  background: "rgba(6, 4, 4, 0.4)",
+                  border: "1px solid rgba(255, 255, 255, 0.07)",
+                  backdropFilter: "blur(20px)",
+                  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.5)",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  transform: "translateY(0)",
+                  opacity: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.border = "1px solid rgba(232, 113, 42, 0.3)";
+                  e.currentTarget.style.transform = "translateY(-6px)";
+                  e.currentTarget.style.boxShadow = "0 8px 32px rgba(232, 113, 42, 0.1)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.border = "1px solid rgba(255, 255, 255, 0.06)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                {/* Client Name */}
+                <h3
+                  className="mb-3"
+                  style={{
+                    fontFamily: "Playfair Display, serif",
+                    fontWeight: "700",
+                    fontSize: "1.25rem",
+                    color: "#f5f0eb",
                   }}
-                  className="p-2 rounded-lg hover:bg-white/60 transition-colors"
-                  title="Copy"
                 >
-                  <Copy size={18} style={{ color: "#375534" }} />
-                </button>
+                  {proposal.formData.clientName}
+                </h3>
+
+                {/* Service Type Tag */}
+                <div
+                  className="inline-block px-3 py-1 rounded-full mb-4"
+                  style={{
+                    background: "rgba(232, 113, 42, 0.1)",
+                    color: "#e8712a",
+                    fontFamily: "DM Sans, Inter, sans-serif",
+                    fontSize: "0.688rem",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {proposal.formData.serviceOffering}
+                </div>
+
+                {/* Business Name & Date */}
+                <div className="mb-6">
+                  <p
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: "0.875rem",
+                      color: "#8a7f78",
+                    }}
+                  >
+                    {proposal.formData.businessName}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: "0.75rem",
+                      color: "#8a7f78",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Generated {formatDate(proposal.dateGenerated)}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => onViewProposal(proposal)}
+                    className="flex-1 px-4 py-2 rounded-full"
+                    style={{
+                      border: "2px solid #e8712a",
+                      color: "#e8712a",
+                      fontFamily: "DM Sans, Inter, sans-serif",
+                      fontSize: "0.875rem",
+                      fontWeight: "600",
+                      background: "transparent",
+                      transition: "all 0.2s ease",
+                      transform: "scale(1)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.04)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => downloadPDF(proposal)}
+                    className="flex-1 px-4 py-2 rounded-full"
+                    style={{
+                      background: "#e8712a",
+                      color: "#0c0a09",
+                      fontFamily: "DM Sans, Inter, sans-serif",
+                      fontSize: "0.875rem",
+                      fontWeight: "700",
+                      transition: "all 0.2s ease",
+                      transform: "scale(1)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "scale(1.04)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                  >
+                    Download PDF
+                  </button>
+                </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {notice && (
-          <p className="mt-4 text-sm" style={{ color: "#6B9071" }}>
-            {notice}
-          </p>
-        )}
-
-        {!saved.length && (
-          <p className="mt-5 text-sm" style={{ color: "#6B9071" }}>
-            Showing a sample proposal. Once you generate from an opportunity, your saved proposals will appear here.
-          </p>
+            ))}
+          </div>
         )}
       </div>
     </div>
